@@ -8,10 +8,6 @@ License:        Apache
 URL:            https://pypi.python.org/pypi/shade
 Source0:        https://pypi.python.org/packages/source/s/%{srcname}/%{srcname}-%{version}.tar.gz
 BuildArch:      noarch
-BuildRequires:  python2-devel
-%if 0%{?with_python3}
-BuildRequires:  python3-devel
-%endif # if with_python3
 
 BuildRequires:  python-pbr
 BuildRequires:  python2-devel
