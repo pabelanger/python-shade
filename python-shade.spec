@@ -1,8 +1,13 @@
+%if 0%{?fedora}
+%global with_python3 1
+%endif
+%{!?python2_shortver: %global python2_shortver %(%{__python2} -c 'import sys; print("%s.%s" % (sys.version_info.major,sys.version_info.minor))')}
+%{!?python3_shortver: %global python3_shortver %(%{__python3} -c 'import sys; print("%s.%s" % (sys.version_info.major,sys.version_info.minor))')}
 %global srcname shade
 
 Name:           python-%{srcname}
 Version:        0.15.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Python module for operating OpenStack clouds
 License:        Apache
 URL:            https://pypi.python.org/pypi/shade
@@ -11,7 +16,9 @@ BuildArch:      noarch
 
 BuildRequires:  python-pbr >= 0.11, python-pbr < 2.0
 BuildRequires:  python2-devel
+%if 0%{?with_python3}
 BuildRequires:  python3-devel
+%endif # if with_python3
 
 %description
 shade is a simple client library for operating OpenStack clouds.
@@ -40,6 +47,7 @@ Conflicts:	python-novaclient = 2.27.0
 %description -n python2-%{srcname}
 shade is a simple client library for operating OpenStack clouds.
 
+%if 0%{?with_python3}
 %package -n python3-%{srcname}
 Summary:	%{summary}
 Requires:       python3-dogpile-cache		>= 0.5.3
@@ -63,41 +71,59 @@ Conflicts:	python3-novaclient = 2.27.0
 
 %description -n python3-%{srcname}
 shade is a simple client library for operating OpenStack clouds.
+%endif
 
 %prep
 %autosetup -n %{srcname}-%{version}
 
 %build
 %py2_build
+%if 0%{?with_python3}
 %py3_build
+%endif
 
 %install
-py2_version=$(%{__python2} -c '
-import sys; print "%s.%s" % (sys.version_info.major, sys.version_info.minor)')
 %py2_install
 mv $RPM_BUILD_ROOT%{_bindir}/shade-inventory \
-	$RPM_BUILD_ROOT%{_bindir}/shade-inventory-$py2_version
+	$RPM_BUILD_ROOT%{_bindir}/shade-inventory-%{python2_shortver}
+%if 0%{?with_python3}
 %py3_install
+mv $RPM_BUILD_ROOT%{_bindir}/shade-inventory \
+	$RPM_BUILD_ROOT%{_bindir}/shade-inventory-%{python3_shortver}
+%endif
+
+# handle symlinking of unversioned binary
+%if 0%{?with_python3}
+ln -s shade-inventory-%{python3_shortver} \
+	$RPM_BUILD_ROOT%{_bindir}/shade-inventory
+%else
+ln -s shade-inventory-%{python2_shortver} \
+	$RPM_BUILD_ROOT%{_bindir}/shade-inventory
+%endif
 
 #%check
 ##{__python2} setup.py test
 ##{__python3} setup.py test
 
 %files -n python2-%{srcname}
-%defattr(-,root,root)
 %license LICENSE
 %doc README.rst AUTHORS
-%{python2_sitelib}/*
+%{python2_sitelib}/shade*
 
-%{_bindir}/shade-inventory-2*
-
-%files -n python3-%{srcname}
-%defattr(-,root,root)
-%license LICENSE
-%doc README.rst AUTHORS
-%{python3_sitelib}/*
-
+%{_bindir}/shade-inventory-%{python2_shortver}
+%if ! 0%{?with_python3}
 %{_bindir}/shade-inventory
+%endif
+
+%if 0%{?with_python3}
+%files -n python3-%{srcname}
+%license LICENSE
+%doc README.rst AUTHORS
+%{python3_sitelib}/shade*
+
+%{_bindir}/shade-inventory-%{python3_shortver}
+%{_bindir}/shade-inventory
+%endif
 
 %changelog
 * Wed Oct 14 2015 Lars Kellogg-Stedman <lars@redhat.com> - 0.15.0-1
