@@ -6,8 +6,8 @@
 %global srcname shade
 
 Name:           python-%{srcname}
-Version:        0.15.0
-Release:        2%{?dist}
+Version:        0.16.0
+Release:        1%{?dist}
 Summary:        Python module for operating OpenStack clouds
 License:        Apache
 URL:            https://pypi.python.org/pypi/shade
@@ -100,10 +100,6 @@ ln -s shade-inventory-%{python3_shortver} \
 ln -s shade-inventory-%{python2_shortver} \
 	$RPM_BUILD_ROOT%{_bindir}/shade-inventory
 %endif
-
-#%check
-##{__python2} setup.py test
-##{__python3} setup.py test
 
 %files -n python2-%{srcname}
 %license LICENSE
